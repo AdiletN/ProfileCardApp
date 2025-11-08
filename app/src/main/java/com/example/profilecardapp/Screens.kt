@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -71,7 +72,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
     var selectedStory by remember { mutableStateOf<Story?>(null) }
     var showUnfollowDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -81,7 +81,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
     )
     val buttonTextColor = if (viewModel.isFollowing) androidx.compose.ui.graphics.Color.White else DarkPurple
     val animatedFollowerCount by animateIntAsState(viewModel.followerCount)
-    val stories = viewModel.stories
 
     Scaffold(
         topBar = {
@@ -89,12 +88,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                 title = {
                     Text(
                         text = "Profile",
-                        style = TextStyle(
-                            fontFamily = Lato,
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkPurple
-                        )
+                        style = TextStyle(fontFamily = Lato, fontSize = 25.sp, fontWeight = FontWeight.Bold, color = DarkPurple)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = LightPurple),
@@ -102,11 +96,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onEdit() }) {
-                Text("Edit", fontFamily = Lato)
-            }
-        }
+        floatingActionButton = { FloatingActionButton(onClick = { onEdit() }) { Text("Edit", fontFamily = Lato) } }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -120,6 +110,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Stories
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -127,12 +118,10 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(stories) { story ->
+                    items(viewModel.stories) { story ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.pointerInput(Unit) {
-                                detectTapGestures { selectedStory = story }
-                            }
+                            modifier = Modifier.pointerInput(Unit) { detectTapGestures { selectedStory = story } }
                         ) {
                             Image(
                                 painter = painterResource(id = story.avatarRes),
@@ -143,16 +132,12 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                                     .border(3.dp, GoldYellow, CircleShape)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = story.name,
-                                fontFamily = Lato,
-                                fontSize = 14.sp,
-                                color = DarkPurple
-                            )
+                            Text(text = story.name, fontFamily = Lato, fontSize = 14.sp, color = DarkPurple)
                         }
                     }
                 }
 
+                // Profile Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
@@ -182,80 +167,50 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
-
-                        Text(
-                            text = viewModel.name,
-                            style = TextStyle(
-                                fontFamily = Lato,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = DarkPurple
-                            )
-                        )
-                        Text(
-                            text = viewModel.bio,
-                            style = TextStyle(
-                                fontFamily = Lato,
-                                fontSize = 16.sp,
-                                color = DarkPurple.copy(alpha = 0.6f)
-                            )
-                        )
-
+                        Text(text = viewModel.name, style = TextStyle(fontFamily = Lato, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = DarkPurple))
+                        Text(text = viewModel.bio, style = TextStyle(fontFamily = Lato, fontSize = 16.sp, color = DarkPurple.copy(alpha = 0.6f)))
                         Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Followers: $animatedFollowerCount",
-                            style = TextStyle(
-                                fontFamily = Lato,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkPurple
-                            )
-                        )
-
+                        Text(text = "Followers: $animatedFollowerCount", style = TextStyle(fontFamily = Lato, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkPurple))
                         Spacer(modifier = Modifier.height(18.dp))
 
+                        // Follow / Unfollow
                         ElevatedButton(
                             onClick = {
                                 if (!viewModel.isFollowing) {
                                     viewModel.toggleFollowMain()
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("You followed ${viewModel.name}")
-                                    }
+                                    scope.launch { snackbarHostState.showSnackbar("You followed ${viewModel.name}") }
                                 } else showUnfollowDialog = true
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = animatedButtonColor)
-                        ) {
-                            Text(
-                                text = if (viewModel.isFollowing) "Unfollow" else "Follow",
-                                color = buttonTextColor,
-                                fontFamily = Lato,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        ) { Text(text = if (viewModel.isFollowing) "Unfollow" else "Follow", color = buttonTextColor, fontFamily = Lato, fontWeight = FontWeight.Bold) }
 
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Message button
                         ElevatedButton(
                             onClick = { openExternalLink(context, "mailto:230107139@sdu.edu.kz") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.White)
+                        ) { Text(text = "Message", color = DarkPurple, fontFamily = Lato, fontWeight = FontWeight.Medium) }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Refresh button
+                        ElevatedButton(
+                            onClick = {
+                                viewModel.refreshFollowersFromApi()
+                                scope.launch { snackbarHostState.showSnackbar("Followers updated from API") }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                         ) {
-                            Text(
-                                text = "Message",
-                                color = DarkPurple,
-                                fontFamily = Lato,
-                                fontWeight = FontWeight.Medium
-                            )
+                            Text("Refresh Followers", color = DarkPurple, fontFamily = Lato, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
 
+                // Followers List
                 Text(
                     text = "Followers List",
                     fontFamily = Lato,
@@ -282,9 +237,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                                         message = "${follower.name} removed",
                                         actionLabel = "Undo"
                                     )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        viewModel.undoRemove()
-                                    }
+                                    if (result == SnackbarResult.ActionPerformed) viewModel.undoRemove()
                                 }
                             },
                             onFollowToggle = { viewModel.toggleFollowerFollowState(follower.name) }
@@ -297,9 +250,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                 visible = selectedStory != null,
                 enter = fadeIn(tween(400)),
                 exit = fadeOut(tween(400))
-            ) {
-                selectedStory?.let { story -> StoryScreen(story = story, onClose = { selectedStory = null }) }
-            }
+            ) { selectedStory?.let { StoryScreen(story = it, onClose = { selectedStory = null }) } }
 
             if (showUnfollowDialog) {
                 AlertDialog(
@@ -313,14 +264,13 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                             scope.launch { snackbarHostState.showSnackbar("You unfollowed ${viewModel.name}") }
                         }) { Text("Unfollow", color = androidx.compose.ui.graphics.Color.Red) }
                     },
-                    dismissButton = {
-                        TextButton(onClick = { showUnfollowDialog = false }) { Text("Cancel") }
-                    }
+                    dismissButton = { TextButton(onClick = { showUnfollowDialog = false }) { Text("Cancel") } }
                 )
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
