@@ -9,8 +9,6 @@ class ProfileRepository(
     private val userDao: UserDao,
     private val followerDao: FollowerDao
 ) {
-
-    // --- User operations ---
     suspend fun getUser(): UserEntity? = withContext(Dispatchers.IO) {
         userDao.getUser()
     }
@@ -22,8 +20,6 @@ class ProfileRepository(
     suspend fun updateUser(user: UserEntity) = withContext(Dispatchers.IO) {
         userDao.updateUser(user)
     }
-
-    // --- Followers operations ---
     suspend fun getFollowers(): List<FollowerEntity> = withContext(Dispatchers.IO) {
         followerDao.getAll()
     }
@@ -39,12 +35,10 @@ class ProfileRepository(
     suspend fun deleteFollower(follower: FollowerEntity) = withContext(Dispatchers.IO) {
         followerDao.delete(follower)
     }
-
-    // --- Refresh user from fake API ---
     suspend fun refreshUserFromApi() = withContext(Dispatchers.IO) {
         val users = RetrofitInstance.api.getUsers()
         if (users.isNotEmpty()) {
-            val first = users.first() // берём первого пользователя для примера
+            val first = users.first()
             val entity = UserEntity(
                 id = 1,
                 name = first.name,
@@ -56,18 +50,16 @@ class ProfileRepository(
     }
     suspend fun refreshFollowersFromApi() = withContext(Dispatchers.IO) {
         val users = RetrofitInstance.api.getUsers()
-        users.forEach { user ->
+        for (user in users) {
             val follower = FollowerEntity(
                 name = user.name,
                 avatarRes = R.drawable.profile_image,
                 isFollowing = false
             )
-            followerDao.insert(follower) // insert с REPLACE уже стоит в FollowerDao
+            followerDao.insert(follower)
         }
     }
 }
-
-// --- Extension function для конвертации Follower -> FollowerEntity ---
 fun Follower.toEntity(): FollowerEntity = FollowerEntity(
     name = this.name,
     avatarRes = this.avatarRes,

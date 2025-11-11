@@ -110,7 +110,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Stories
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,7 +136,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                     }
                 }
 
-                // Profile Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
@@ -173,7 +171,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                         Text(text = "Followers: $animatedFollowerCount", style = TextStyle(fontFamily = Lato, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkPurple))
                         Spacer(modifier = Modifier.height(18.dp))
 
-                        // Follow / Unfollow
                         ElevatedButton(
                             onClick = {
                                 if (!viewModel.isFollowing) {
@@ -187,7 +184,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Message button
                         ElevatedButton(
                             onClick = { openExternalLink(context, "mailto:230107139@sdu.edu.kz") },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -196,7 +192,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Refresh button
                         ElevatedButton(
                             onClick = {
                                 viewModel.refreshFollowersFromApi()
@@ -210,7 +205,6 @@ fun ProfileScreen(viewModel: ProfileViewModel, onEdit: () -> Unit) {
                     }
                 }
 
-                // Followers List
                 Text(
                     text = "Followers List",
                     fontFamily = Lato,

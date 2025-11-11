@@ -22,7 +22,7 @@ abstract class ProfileDatabase : RoomDatabase() {
                     ProfileDatabase::class.java,
                     "profile_database"
                 )
-                    .fallbackToDestructiveMigration() // пересоздаёт базу, если версия изменилась
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

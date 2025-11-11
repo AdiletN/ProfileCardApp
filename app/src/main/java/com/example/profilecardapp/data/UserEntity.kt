@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "user_table")
 data class UserEntity(
-    @PrimaryKey val id: Int = 1, // у нас один пользователь, id = 1
+    @PrimaryKey val id: Int = 1,
     val name: String,
     val followerCount: Int,
     val isFollowing: Boolean

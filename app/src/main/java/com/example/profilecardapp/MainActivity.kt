@@ -17,7 +17,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // --- Подключаем Room ---
             val db = ProfileDatabase.getDatabase(context = this)
             val userDao = db.userDao()
             val followerDao = db.followerDao()
@@ -50,8 +49,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-// --- Функция для открытия внешних ссылок ---
 fun openExternalLink(context: android.content.Context, uri: String) {
     try {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))

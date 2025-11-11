@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
 
-    // --- User profile state ---
     var name by mutableStateOf("")
         private set
 
@@ -31,8 +30,6 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
 
     var profileUpdatedCounter by mutableStateOf(0)
         private set
-
-    // --- Followers and stories ---
     private val _followers = mutableStateListOf<Follower>()
     val followers: List<Follower> get() = _followers
 
@@ -45,7 +42,6 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
     )
     val stories: List<Story> get() = _stories
 
-    // --- Initialization: load user and followers from Room ---
     init {
         loadUserFromDb()
         loadFollowersFromDb()
@@ -84,14 +80,13 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
         viewModelScope.launch {
             try {
                 repository.refreshFollowersFromApi()
-                loadFollowersFromDb() // обновляем список после вставки
+                loadFollowersFromDb()
             } catch (e: Exception) {
-                e.printStackTrace() // чтобы не падало, если что-то с API
+                e.printStackTrace()
             }
         }
     }
 
-    // --- Profile update methods with Room persistence ---
     fun updateName(newName: String) {
         name = newName
         profileUpdatedCounter++
@@ -135,7 +130,6 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
         }
     }
 
-    // --- Followers list operations ---
     fun addFollower(follower: Follower) {
         _followers.add(follower)
         viewModelScope.launch { repository.insertFollower(follower.toEntity()) }
@@ -165,16 +159,20 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
         }
     }
 
-    // --- Refresh data from API ---
-    fun refreshFromApi() {
+    fun refreshFollowers() {
         viewModelScope.launch {
-            repository.refreshUserFromApi()
-            val user = repository.getUser()
-            if (user != null) {
-                name = user.name
-                followerCount = user.followerCount
-                isFollowing = user.isFollowing
+            try {
+                repository.refreshFollowersFromApi()
+                val savedFollowers = repository.getFollowers()
+                _followers.clear()
+                _followers.addAll(savedFollowers.map {
+                    Follower(it.name, it.avatarRes, it.isFollowing)
+                })
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
+
+
 }
