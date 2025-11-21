@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -37,31 +38,50 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import com.example.profilecardapp.model.Follower
 import com.example.profilecardapp.model.Story
+import com.example.profilecardapp.model.Post
 import com.example.profilecardapp.ProfileViewModel
 import com.example.profilecardapp.ui.theme.*
 
 @Composable
-fun HomeScreen(onGoProfile: () -> Unit) {
+fun HomeScreen(onGoProfile: () -> Unit, onGoFeeds: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(LightPurple),
         contentAlignment = Alignment.Center
     ) {
-        ElevatedButton(
-            onClick = onGoProfile,
-            modifier = Modifier
-                .padding(16.dp)
-                .height(56.dp)
-                .fillMaxWidth(0.6f)
-        ) {
-            Text(
-                text = "Go to Profile",
-                fontFamily = Lato,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = GoldYellow
-            )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ElevatedButton(
+                onClick = onGoProfile,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .height(56.dp)
+                    .fillMaxWidth(0.6f)
+            ) {
+                Text(
+                    text = "Go to Profile",
+                    fontFamily = Lato,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GoldYellow
+                )
+            }
+            ElevatedButton(
+                onClick = onGoFeeds,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .height(56.dp)
+                    .fillMaxWidth(0.6f),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkPurple)
+            ) {
+                Text(
+                    text = "Go to Feeds",
+                    fontFamily = Lato,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -434,6 +454,101 @@ fun SwipeToDismissFollower(
                     fontWeight = FontWeight.Bold
                 )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FeedsScreen(viewModel: ProfileViewModel, onBack: () -> Unit) {
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Feeds", style = TextStyle(fontFamily = Lato, fontSize = 25.sp, fontWeight = FontWeight.Bold, color = DarkPurple)) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = LightPurple),
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(painter = painterResource(id = R.drawable.ic_back), contentDescription = "Back", tint = DarkPurple)
+                    }
+                },
+                modifier = Modifier.shadow(4.dp)
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(LightPurple.copy(alpha = 0.5f))
+                .padding(innerPadding)
+                .padding(horizontal = 8.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(viewModel.posts, key = { it.id }) { post ->
+                PostCard(post = post, onLikeToggle = { viewModel.togglePostLike(post.id) })
+            }
+        }
+    }
+}
+@Composable
+fun PostCard(post: Post, onLikeToggle: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = post.userAvatarRes),
+                    contentDescription = post.userName,
+                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = post.userName,
+                    style = TextStyle(fontFamily = Lato, fontWeight = FontWeight.Bold, color = DarkPurple)
+                )
+            }
+            Image(
+                painter = painterResource(id = post.imageRes),
+                contentDescription = "Post Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
+                contentScale = ContentScale.Crop
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onLikeToggle) {
+                    val iconRes = if (post.isLiked) R.drawable.ic_liked else R.drawable.ic_like
+                    val tint = if (post.isLiked) Color.Red else DarkPurple
+                    Icon(painter = painterResource(id = iconRes), contentDescription = "Like", tint = tint)
+                }
+                Text(
+                    text = "${post.likes} likes",
+                    style = TextStyle(fontFamily = Lato, fontSize = 14.sp, color = DarkPurple.copy(alpha = 0.8f))
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(painter = painterResource(id = R.drawable.ic_comment), contentDescription = "Comment", tint = DarkPurple)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "${post.comments} comments",
+                    style = TextStyle(fontFamily = Lato, fontSize = 14.sp, color = DarkPurple.copy(alpha = 0.8f))
+                )
+            }
+            Text(
+                text = "${post.userName}: ${post.caption}",
+                style = TextStyle(fontFamily = Lato, color = DarkPurple),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
+            )
         }
     }
 }

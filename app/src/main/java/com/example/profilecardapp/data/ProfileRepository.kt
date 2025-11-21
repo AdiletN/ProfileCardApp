@@ -4,8 +4,8 @@ import com.example.profilecardapp.R
 import com.example.profilecardapp.model.Follower
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-class ProfileRepository(
+import javax.inject.Inject
+class ProfileRepository @Inject constructor(
     private val userDao: UserDao,
     private val followerDao: FollowerDao
 ) {

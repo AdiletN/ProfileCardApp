@@ -11,10 +11,15 @@ import com.example.profilecardapp.data.UserEntity
 import com.example.profilecardapp.data.toEntity
 import com.example.profilecardapp.model.Follower
 import com.example.profilecardapp.model.Story
+import com.example.profilecardapp.model.Post
 import com.example.profilecardapp.R
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-
-class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
+import javax.inject.Inject
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val repository: ProfileRepository
+) : ViewModel() {
 
     var name by mutableStateOf("")
         private set
@@ -30,6 +35,7 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
 
     var profileUpdatedCounter by mutableStateOf(0)
         private set
+
     private val _followers = mutableStateListOf<Follower>()
     val followers: List<Follower> get() = _followers
 
@@ -41,6 +47,12 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
         Story("Ayazhan", R.drawable.profile_image2)
     )
     val stories: List<Story> get() = _stories
+    private val _posts = mutableStateListOf(
+        Post(1, "Dias", R.drawable.profile_image3, R.drawable.post_image3, "Mountain adventures!", 120, 15),
+        Post(2, "Ayazhan", R.drawable.profile_image2, R.drawable.post_image1, "My idol", 85, 9),
+        Post(3, "Aruzhan", R.drawable.profile_image2, R.drawable.post_image2, "New project launch!", 250, 42)
+    )
+    val posts: List<Post> get() = _posts
 
     init {
         loadUserFromDb()
@@ -173,6 +185,16 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
             }
         }
     }
+    fun togglePostLike(postId: Int) {
+        val index = _posts.indexOfFirst { it.id == postId }
+        if (index >= 0) {
+            val currentPost = _posts[index]
+            val newLikes = if (currentPost.isLiked) currentPost.likes - 1 else currentPost.likes + 1
 
-
+            _posts[index] = currentPost.copy(
+                isLiked = !currentPost.isLiked,
+                likes = newLikes
+            )
+        }
+    }
 }
